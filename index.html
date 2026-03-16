@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samaadhaan — Vendor & Team Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c28;
+    --border: #2a2a3a;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --accent3: #43e97b;
+    --text: #eeeef5;
+    --text2: #9999b8;
+    --text3: #5555775;
+    --gold: #f0c040;
+    --radius: 14px;
+    --shadow: 0 8px 32px rgba(108,99,255,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ── LOGIN SCREEN ── */
+  #loginScreen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 30% 40%, #1a1040 0%, var(--bg) 60%);
+    position: relative; overflow: hidden;
+  }
+  #loginScreen::before {
+    content: ''; position: absolute; width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
+    top: -200px; right: -100px; pointer-events: none;
+  }
+  .login-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 24px; padding: 48px; width: 420px; max-width: 95vw;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(108,99,255,0.1);
+    position: relative; z-index: 1;
+  }
+  .logo { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+  .logo span { color: var(--accent); }
+  .login-sub { color: var(--text2); font-size: 14px; margin-bottom: 32px; }
+  .role-tabs { display: flex; gap: 8px; margin-bottom: 28px; }
+  .role-tab {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+    background: transparent; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500; transition: all .2s;
+  }
+  .role-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 12px 16px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border .2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+  .form-group select option { background: var(--surface2); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px;
+    border-radius: 10px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500; transition: all .2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #7c74ff; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(108,99,255,0.35); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(255,101,132,0.15); color: var(--accent2); border: 1px solid rgba(255,101,132,0.3); }
+  .btn-success { background: rgba(67,233,123,0.15); color: var(--accent3); border: 1px solid rgba(67,233,123,0.3); }
+  .btn-full { width: 100%; justify-content: center; }
+  .btn-sm { padding: 7px 14px; font-size: 12px; }
+
+  /* ── APP SHELL ── */
+  #app { display: none; min-height: 100vh; }
+  .sidebar {
+    position: fixed; left: 0; top: 0; height: 100vh; width: 240px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 24px 16px; display: flex; flex-direction: column; z-index: 100;
+  }
+  .sidebar-logo { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; padding: 8px 12px; margin-bottom: 24px; }
+  .sidebar-logo span { color: var(--accent); }
+  .user-badge {
+    background: var(--surface2); border-radius: 12px; padding: 12px; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+  }
+  .user-info { flex: 1; overflow: hidden; }
+  .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 11px; color: var(--text2); text-transform: capitalize; }
+  .nav-section { font-size: 10px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; padding: 0 12px; margin: 16px 0 8px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
+    cursor: pointer; color: var(--text2); font-size: 14px; transition: all .2s; margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(108,99,255,0.15); color: var(--accent); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-bottom { margin-top: auto; }
+
+  .main { margin-left: 240px; padding: 32px; min-height: 100vh; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-header h2 { font-size: 26px; font-weight: 800; }
+  .page-header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+
+  /* ── CARDS & GRID ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--accent-color, var(--accent));
+  }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; }
+  .stat-label { color: var(--text2); font-size: 12px; margin-top: 4px; }
+  .stat-icon { position: absolute; top: 16px; right: 16px; font-size: 24px; opacity: .3; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; margin-bottom: 16px;
+  }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  td { padding: 12px 14px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  }
+  .badge-purple { background: rgba(108,99,255,0.2); color: #a09aff; }
+  .badge-green { background: rgba(67,233,123,0.15); color: #43e97b; }
+  .badge-red { background: rgba(255,101,132,0.15); color: #ff6584; }
+  .badge-gold { background: rgba(240,192,64,0.15); color: var(--gold); }
+  .badge-blue { background: rgba(64,169,255,0.15); color: #40a9ff; }
+  .badge-gray { background: rgba(153,153,184,0.15); color: var(--text2); }
+
+  /* ── PROJECT CARD ── */
+  .project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .project-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; transition: all .25s; cursor: default;
+  }
+  .project-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+  .project-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .project-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  .project-desc { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 14px; }
+  .project-meta { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text2); margin-bottom: 14px; }
+  .project-meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* ── QUIZ ── */
+  .quiz-progress { height: 4px; background: var(--border); border-radius: 2px; margin-bottom: 28px; }
+  .quiz-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width .4s; }
+  .quiz-q { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .quiz-qnum { font-size: 12px; color: var(--text2); margin-bottom: 16px; }
+  .quiz-option {
+    display: flex; align-items: center; gap: 12px; padding: 14px 18px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 10px; cursor: pointer; transition: all .2s;
+  }
+  .quiz-option:hover { border-color: var(--accent); }
+  .quiz-option.selected { border-color: var(--accent); background: rgba(108,99,255,0.12); }
+  .quiz-option.correct { border-color: var(--accent3); background: rgba(67,233,123,0.1); }
+  .quiz-option.wrong { border-color: var(--accent2); background: rgba(255,101,132,0.1); }
+  .quiz-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; }
+
+  /* ── INVOICE ── */
+  .invoice-preview {
+    background: #fff; color: #111; border-radius: var(--radius);
+    padding: 40px; font-family: 'DM Sans', sans-serif;
+  }
+  .invoice-preview h3 { font-family: 'Syne', sans-serif; font-size: 28px; color: #6c63ff; }
+  .inv-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .inv-table th { background: #f5f5ff; padding: 8px 12px; font-size: 12px; text-align: left; }
+  .inv-table td { padding: 8px 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+  .inv-total { font-weight: 700; font-size: 18px; text-align: right; margin-top: 12px; color: #6c63ff; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    z-index: 1000; display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+    padding: 32px; width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+    position: relative;
+  }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: var(--surface2); border: none; color: var(--text2); border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 32px; right: 32px; background: var(--surface);
+    border: 1px solid var(--accent); border-radius: 12px; padding: 14px 20px;
+    font-size: 14px; z-index: 9999; transform: translateY(100px); opacity: 0;
+    transition: all .3s; display: flex; align-items: center; gap: 10px;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ── MISC ── */
+  .section-actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .empty-state { text-align: center; padding: 48px; color: var(--text2); }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .tag { display: inline-block; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; font-size: 11px; color: var(--text2); margin: 2px; }
+  .score-ring { width: 100px; height: 100px; margin: 0 auto 16px; position: relative; }
+  .score-ring svg { transform: rotate(-90deg); }
+  .score-ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .flex-gap { display: flex; align-items: center; gap: 10px; }
+
+  @media(max-width: 768px) {
+    .sidebar { width: 200px; }
+    .main { margin-left: 200px; padding: 20px; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media(max-width: 560px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="logo">Samaa<span>dhaan</span></div>
+    <div class="login-sub">Vendor & Team Onboarding Portal</div>
+    <div class="role-tabs">
+      <button class="role-tab active" onclick="setRole('admin')">🔐 Admin</button>
+      <button class="role-tab" onclick="setRole('vendor')">🏢 Vendor</button>
+      <button class="role-tab" onclick="setRole('freelancer')">💼 Freelancer</button>
+      <button class="role-tab" onclick="setRole('intern')">🎓 Intern</button>
+    </div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" id="loginName" placeholder="Your name">
+    </div>
+    <div class="form-group" id="orgGroup">
+      <label>Organization / Company</label>
+      <input type="text" id="loginOrg" placeholder="Company name (optional)">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@company.com">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:8px;">Enter Portal →</button>
+    <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--text2);">Demo: any name/email/password works</p>
+  </div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app">
+  <div class="sidebar">
+    <div class="sidebar-logo">Samaa<span>dhaan</span></div>
+    <div class="user-badge">
+      <div class="avatar" id="sidebarAvatar">AB</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">User</div>
+        <div class="user-role" id="sidebarRole">Role</div>
+      </div>
+    </div>
+    <div id="sidebarNav"></div>
+    <div class="sidebar-bottom">
+      <div class="nav-item" onclick="logout()">
+        <span class="nav-icon">🚪</span> Logout
+      </div>
+    </div>
+  </div>
+  <div class="main">
+    <!-- PAGES -->
+    <div id="page-dashboard" class="page active"></div>
+    <div id="page-projects" class="page"></div>
+    <div id="page-apply" class="page"></div>
+    <div id="page-team" class="page"></div>
+    <div id="page-quiz" class="page"></div>
+    <div id="page-invoices" class="page"></div>
+    <div id="page-reports" class="page"></div>
+    <div id="page-users" class="page"></div>
+    <div id="page-settings" class="page"></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div id="toast">✓ <span id="toastMsg">Done!</span></div>
+
+<script>
+// ══════════════════════════════════════
+//  STATE & STORAGE
+// ══════════════════════════════════════
+let state = {
+  user: null,
+  role: 'admin',
+  currentPage: 'dashboard'
+};
+
+function ls(k, d=null) {
+  try { const v = localStorage.getItem('wb_'+k); return v ? JSON.parse(v) : d; } catch { return d; }
+}
+function ls_set(k, v) { localStorage.setItem('wb_'+k, JSON.stringify(v)); }
+
+// Initialize default data
+if (!ls('projects')) ls_set('projects', [
+  { id: 1, title: 'Mobile App UI Redesign', desc: 'Revamp the mobile app UI for better user experience and modern look.', budget: '₹80,000', duration: '6 weeks', skills: ['UI/UX','Figma','React Native'], status: 'open', category: 'Design', applicants: [] },
+  { id: 2, title: 'Backend API Development', desc: 'Build RESTful APIs for e-commerce platform with Node.js and PostgreSQL.', budget: '₹1,20,000', duration: '8 weeks', skills: ['Node.js','PostgreSQL','REST APIs'], status: 'open', category: 'Development', applicants: [] },
+  { id: 3, title: 'SEO & Content Strategy', desc: 'Develop and execute SEO strategy to increase organic traffic by 40%.', budget: '₹45,000', duration: '3 months', skills: ['SEO','Content Writing','Analytics'], status: 'active', category: 'Marketing', applicants: [] },
+  { id: 4, title: 'Data Analytics Dashboard', desc: 'Create interactive dashboards using Power BI or Tableau for business insights.', budget: '₹95,000', duration: '5 weeks', skills: ['Power BI','SQL','Python'], status: 'open', category: 'Analytics', applicants: [] }
+]);
+if (!ls('users')) ls_set('users', []);
+if (!ls('invoices')) ls_set('invoices', []);
+if (!ls('teams')) ls_set('teams', {});
+if (!ls('quiz_results')) ls_set('quiz_results', []);
+
+const QUIZ_BANK = [
+  { q: 'What does SLA stand for?', opts: ['Service Level Agreement','System Level Architecture','Software Lifecycle Analysis','Service Launch Approval'], ans: 0 },
+  { q: 'What is the standard payment term used in most B2B vendor contracts?', opts: ['Net 15','Net 30','Net 7','Immediate'], ans: 1 },
+  { q: 'Which file format is most commonly used for invoicing?', opts: ['.docx','.xlsx','.pdf','.txt'], ans: 2 },
+  { q: 'What does NDA stand for in business contracts?', opts: ['Net Delivery Agreement','Non-Disclosure Agreement','New Development Approach','Neutral Data Access'], ans: 1 },
+  { q: 'Which of these is a project management methodology?', opts: ['FIFO','Agile','LIFO','REST'], ans: 1 },
+  { q: 'What is a milestone in project management?', opts: ['A payment term','A key checkpoint or deliverable in a project','A team meeting','A risk assessment'], ans: 1 },
+  { q: 'PO in procurement stands for?', opts: ['Project Output','Purchase Order','Payment Obligation','Process Overview'], ans: 1 },
+  { q: 'What is the purpose of a Statement of Work (SOW)?', opts: ['To describe project scope, deliverables and timeline','To list employee salaries','To track bug reports','To request time off'], ans: 0 },
+];
+
+// ══════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════
+function setRole(r) {
+  state.role = r;
+  document.querySelectorAll('.role-tab').forEach((t,i) => t.classList.toggle('active', ['admin','vendor','freelancer','intern'][i] === r));
+}
+
+function doLogin() {
+  const name = document.getElementById('loginName').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!name || !email) { showToast('⚠️ Please enter name and email'); return; }
+  state.user = { name, email, role: state.role, org: document.getElementById('loginOrg').value.trim(), id: Date.now() };
+  const users = ls('users');
+  if (!users.find(u => u.email === email)) { users.push(state.user); ls_set('users', users); }
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  buildSidebar();
+  navigate('dashboard');
+}
+
+function logout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  state.user = null;
+}
+
+// ══════════════════════════════════════
+//  SIDEBAR
+// ══════════════════════════════════════
+const NAV_CONFIG = {
+  admin: [
+    { section: 'Overview' },
+    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+    { section: 'Management' },
+    { id: 'projects', icon: '📁', label: 'Projects' },
+    { id: 'users', icon: '👥', label: 'All Users' },
+    { id: 'invoices', icon: '🧾', label: 'Invoices' },
+    { id: 'reports', icon: '📈', label: 'Reports' },
+    { section: 'Settings' },
+    { id: 'settings', icon: '⚙️', label: 'Settings' },
+  ],
+  vendor: [
+    { section: 'Overview' },
+    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+    { section: 'Work' },
+    { id: 'apply', icon: '🔍', label: 'Browse Projects' },
+    { id: 'projects', icon: '📁', label: 'My Projects' },
+    { section: 'Team & Finance' },
+    { id: 'team', icon: '👥', label: 'My Team' },
+    { id: 'invoices', icon: '🧾', label: 'Invoices' },
+    { section: 'Onboarding' },
+    { id: 'quiz', icon: '✅', label: 'Take Test' },
+    { id: 'reports', icon: '📈', label: 'My Reports' },
+  ],
+  freelancer: [
+    { section: 'Overview' },
+    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+    { section: 'Work' },
+    { id: 'apply', icon: '🔍', label: 'Browse Projects' },
+    { id: 'projects', icon: '📁', label: 'My Projects' },
+    { section: 'Finance' },
+    { id: 'invoices', icon: '🧾', label: 'Invoices' },
+    { section: 'Onboarding' },
+    { id: 'quiz', icon: '✅', label: 'Take Test' },
+    { id: 'reports', icon: '📈', label: 'My Reports' },
+  ],
+  intern: [
+    { section: 'Overview' },
+    { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+    { section: 'Work' },
+    { id: 'apply', icon: '🔍', label: 'Browse Projects' },
+    { id: 'projects', icon: '📁', label: 'My Projects' },
+    { section: 'Onboarding' },
+    { id: 'quiz', icon: '✅', label: 'Take Test' },
+    { id: 'reports', icon: '📈', label: 'My Reports' },
+  ]
+};
+
+function buildSidebar() {
+  const { name, role } = state.user;
+  document.getElementById('sidebarAvatar').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('sidebarName').textContent = name;
+  document.getElementById('sidebarRole').textContent = role;
+  const nav = NAV_CONFIG[role] || NAV_CONFIG.vendor;
+  document.getElementById('sidebarNav').innerHTML = nav.map(item =>
+    item.section
+      ? `<div class="nav-section">${item.section}</div>`
+      : `<div class="nav-item" id="nav-${item.id}" onclick="navigate('${item.id}')"><span class="nav-icon">${item.icon}</span>${item.label}</div>`
+  ).join('');
+}
+
+function navigate(page) {
+  state.currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+page);
+  if (pageEl) { pageEl.classList.add('active'); renderPage(page); }
+  const navEl = document.getElementById('nav-'+page);
+  if (navEl) navEl.classList.add('active');
+}
+
+// ══════════════════════════════════════
+//  PAGE RENDERERS
+// ══════════════════════════════════════
+function renderPage(page) {
+  const renderers = { dashboard: renderDashboard, projects: renderProjects, apply: renderApply, team: renderTeam, quiz: renderQuiz, invoices: renderInvoices, reports: renderReports, users: renderUsers, settings: renderSettings };
+  if (renderers[page]) renderers[page]();
+}
+
+// ── DASHBOARD ──
+function renderDashboard() {
+  const el = document.getElementById('page-dashboard');
+  const projects = ls('projects');
+  const users = ls('users');
+  const invoices = ls('invoices');
+  const results = ls('quiz_results');
+  const role = state.user.role;
+  const myInvoices = invoices.filter(i => i.userEmail === state.user.email);
+  const myResults = results.filter(r => r.userEmail === state.user.email);
+  const myApps = projects.filter(p => p.applicants && p.applicants.find(a => a.email === state.user.email));
+
+  const isAdmin = role === 'admin';
+  const stats = isAdmin ? [
+    { label: 'Total Projects', value: projects.length, icon: '📁', color: 'var(--accent)' },
+    { label: 'Open Projects', value: projects.filter(p=>p.status==='open').length, icon: '🟢', color: 'var(--accent3)' },
+    { label: 'Registered Users', value: users.length, icon: '👥', color: 'var(--accent2)' },
+    { label: 'Total Invoices', value: invoices.length, icon: '🧾', color: 'var(--gold)' },
+  ] : [
+    { label: 'Applied Projects', value: myApps.length, icon: '📋', color: 'var(--accent)' },
+    { label: 'My Invoices', value: myInvoices.length, icon: '🧾', color: 'var(--gold)' },
+    { label: 'Tests Taken', value: myResults.length, icon: '✅', color: 'var(--accent3)' },
+    { label: 'Best Score', value: myResults.length ? Math.max(...myResults.map(r=>r.score))+'%' : 'N/A', icon: '🏆', color: 'var(--accent2)' },
+  ];
+
+  el.innerHTML = `
+    <div class="page-header">
+      <h2>Welcome back, ${state.user.name.split(' ')[0]} 👋</h2>
+      <p>${new Date().toLocaleDateString('en-IN', {weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+    </div>
+    <div class="stats-grid">
+      ${stats.map(s=>`
+        <div class="stat-card" style="--accent-color:${s.color}">
+          <div class="stat-value">${s.value}</div>
+          <div class="stat-label">${s.label}</div>
+          <div class="stat-icon">${s.icon}</div>
+        </div>`).join('')}
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Recent Projects <button class="btn btn-sm btn-secondary" onclick="navigate('${isAdmin?'projects':'apply'}')">View All</button></div>
+        ${projects.slice(0,3).map(p=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;font-size:14px">${p.title}</div>
+              <div style="font-size:12px;color:var(--text2)">${p.budget} · ${p.duration}</div>
+            </div>
+            <span class="badge ${p.status==='open'?'badge-green':p.status==='active'?'badge-blue':'badge-gray'}">${p.status}</span>
+          </div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="card-title">${isAdmin ? 'Recent Invoices' : 'My Recent Invoices'} <button class="btn btn-sm btn-secondary" onclick="navigate('invoices')">View All</button></div>
+        ${(isAdmin ? invoices : myInvoices).slice(0,3).map(inv=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;font-size:14px">${inv.title}</div>
+              <div style="font-size:12px;color:var(--text2)">${isAdmin ? inv.userName+' · ' : ''}${inv.date}</div>
+            </div>
+            <span style="font-weight:700;color:var(--accent3)">₹${inv.total}</span>
+          </div>`).join('')}
+        ${(isAdmin ? invoices : myInvoices).length === 0 ? '<div class="empty-state" style="padding:20px"><div>No invoices yet</div></div>' : ''}
+      </div>
+    </div>`;
+}
+
+// ── PROJECTS (Admin manage / User view their applied) ──
+function renderProjects() {
+  const el = document.getElementById('page-projects');
+  const projects = ls('projects');
+  const isAdmin = state.user.role === 'admin';
+  const myProjects = isAdmin ? projects : projects.filter(p => p.applicants && p.applicants.find(a => a.email === state.user.email));
+
+  el.innerHTML = `
+    <div class="page-header flex-between">
+      <div><h2>${isAdmin ? 'Manage Projects' : 'My Applied Projects'}</h2><p>${myProjects.length} project(s)</p></div>
+      ${isAdmin ? `<button class="btn btn-primary" onclick="showAddProject()">+ Add Project</button>` : ''}
+    </div>
+    <div class="project-grid">
+      ${myProjects.length === 0 ? `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📁</div><div>No projects found</div><button class="btn btn-primary" style="margin-top:12px" onclick="navigate('apply')">Browse Projects</button></div>` : ''}
+      ${myProjects.map(p => {
+        const myApp = p.applicants && p.applicants.find(a => a.email === state.user.email);
+        return `<div class="project-card">
+          <div class="project-card-header">
+            <div>
+              <div class="project-title">${p.title}</div>
+              <span class="tag">${p.category}</span>
+            </div>
+            <span class="badge ${p.status==='open'?'badge-green':p.status==='active'?'badge-blue':'badge-gray'}">${p.status}</span>
+          </div>
+          <div class="project-desc">${p.desc}</div>
+          <div class="project-meta">
+            <span>💰 ${p.budget}</span>
+            <span>⏱️ ${p.duration}</span>
+            <span>👤 ${p.applicants ? p.applicants.length : 0} applicants</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">
+            ${p.skills.map(s=>`<span class="tag">${s}</span>`).join('')}
+          </div>
+          ${isAdmin ? `
+            <div class="flex-gap">
+              <button class="btn btn-sm btn-secondary" onclick="showApplicants(${p.id})">View Applicants (${p.applicants?p.applicants.length:0})</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteProject(${p.id})">Delete</button>
+            </div>` : `
+            <div>
+              ${myApp ? `<span class="badge badge-green">✓ Applied — ${myApp.status || 'Pending'}</span>` : ''}
+            </div>`}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ── BROWSE & APPLY ──
+function renderApply() {
+  const el = document.getElementById('page-apply');
+  const projects = ls('projects').filter(p => p.status === 'open');
+  const myApps = ls('projects').filter(p => p.applicants && p.applicants.find(a => a.email === state.user.email));
+
+  el.innerHTML = `
+    <div class="page-header">
+      <h2>Browse Open Projects</h2>
+      <p>${projects.length} open project(s) available</p>
+    </div>
+    <div class="project-grid">
+      ${projects.map(p => {
+        const applied = p.applicants && p.applicants.find(a => a.email === state.user.email);
+        return `<div class="project-card">
+          <div class="project-card-header">
+            <div><div class="project-title">${p.title}</div><span class="tag">${p.category}</span></div>
+            <span class="badge badge-green">Open</span>
+          </div>
+          <div class="project-desc">${p.desc}</div>
+          <div class="project-meta">
+            <span>💰 ${p.budget}</span><span>⏱️ ${p.duration}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">
+            ${p.skills.map(s=>`<span class="tag">${s}</span>`).join('')}
+          </div>
+          ${applied
+            ? `<span class="badge badge-green">✓ Applied</span>`
+            : `<button class="btn btn-primary btn-sm" onclick="applyProject(${p.id})">Apply Now</button>`}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ── TEAM ──
+function renderTeam() {
+  const el = document.getElementById('page-team');
+  const teams = ls('teams');
+  const myTeam = teams[state.user.email] || [];
+
+  el.innerHTML = `
+    <div class="page-header flex-between">
+      <div><h2>My Team</h2><p>${myTeam.length} member(s)</p></div>
+      <button class="btn btn-primary" onclick="showAddMember()">+ Add Member</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Skill</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>
+            ${myTeam.length === 0 ? `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text2)">No team members yet. Add your first member!</td></tr>` : ''}
+            ${myTeam.map((m,i) => `<tr>
+              <td><div class="flex-gap"><div class="avatar" style="width:28px;height:28px;font-size:11px">${m.name.slice(0,2).toUpperCase()}</div>${m.name}</div></td>
+              <td>${m.role}</td>
+              <td>${m.email}</td>
+              <td>${m.skill}</td>
+              <td><span class="badge ${m.status==='Active'?'badge-green':'badge-gray'}">${m.status}</span></td>
+              <td><button class="btn btn-sm btn-danger" onclick="removeMember('${state.user.email}',${i})">Remove</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ── QUIZ ──
+let quizState = { current: 0, answers: [], questions: [], started: false, finished: false };
+
+function renderQuiz() {
+  const el = document.getElementById('page-quiz');
+  if (!quizState.started || quizState.finished) {
+    el.innerHTML = renderQuizLanding();
+    return;
+  }
+  const q = quizState.questions[quizState.current];
+  const progress = ((quizState.current) / quizState.questions.length) * 100;
+  el.innerHTML = `
+    <div class="page-header"><h2>Onboarding Test</h2></div>
+    <div class="card" style="max-width:680px;margin:0 auto">
+      <div class="quiz-progress"><div class="quiz-progress-bar" style="width:${progress}%"></div></div>
+      <div class="quiz-qnum">Question ${quizState.current+1} of ${quizState.questions.length}</div>
+      <div class="quiz-q">${q.q}</div>
+      <div style="margin-top:20px">
+        ${q.opts.map((opt,i) => `
+          <div class="quiz-option ${quizState.answers[quizState.current]===i?'selected':''}" onclick="selectAnswer(${i})">
+            <div class="quiz-circle">${String.fromCharCode(65+i)}</div>
+            <span>${opt}</span>
+          </div>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:24px">
+        ${quizState.current > 0 ? `<button class="btn btn-secondary" onclick="quizNav(-1)">← Back</button>` : '<div></div>'}
+        <button class="btn btn-primary" onclick="quizNav(1)">${quizState.current===quizState.questions.length-1?'Submit Test':'Next →'}</button>
+      </div>
+    </div>`;
+}
+
+function renderQuizLanding() {
+  const results = ls('quiz_results').filter(r => r.userEmail === state.user.email);
+  return `
+    <div class="page-header"><h2>Onboarding Test</h2></div>
+    ${quizState.finished ? renderQuizResult() : `
+    <div class="card" style="max-width:560px;margin:0 auto;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">📝</div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:22px;margin-bottom:8px">Knowledge Assessment</h3>
+      <p style="color:var(--text2);line-height:1.7;margin-bottom:24px">Test your understanding of our workflows, standards, and processes. This helps us match you to the right projects.</p>
+      <div style="background:var(--surface2);border-radius:12px;padding:16px;margin-bottom:24px;text-align:left">
+        <div style="font-size:13px;color:var(--text2)">📌 ${QUIZ_BANK.length} questions &nbsp;|&nbsp; ⏱️ ~10 minutes &nbsp;|&nbsp; 🎯 Multiple choice</div>
+      </div>
+      <button class="btn btn-primary" style="padding:14px 32px;font-size:15px" onclick="startQuiz()">Start Test</button>
+    </div>`}
+    ${results.length > 0 ? `
+    <div class="card" style="max-width:560px;margin:20px auto">
+      <div class="card-title">Previous Attempts</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Date</th><th>Score</th><th>Result</th></tr></thead>
+        <tbody>${results.map(r=>`<tr>
+          <td>${r.date}</td>
+          <td>${r.score}%</td>
+          <td><span class="badge ${r.score>=60?'badge-green':'badge-red'}">${r.score>=60?'Pass':'Fail'}</span></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>` : ''}`;
+}
+
+function renderQuizResult() {
+  const correct = quizState.answers.filter((a,i) => a === quizState.questions[i].ans).length;
+  const total = quizState.questions.length;
+  const pct = Math.round((correct/total)*100);
+  const pass = pct >= 60;
+  const circ = 2 * Math.PI * 40;
+  return `
+    <div class="card" style="max-width:560px;margin:0 auto;text-align:center">
+      <div style="font-size:36px;margin-bottom:8px">${pass?'🎉':'📚'}</div>
+      <h3 style="font-family:'Syne',sans-serif;font-size:24px;margin-bottom:4px">${pass?'Congratulations!':'Keep Learning!'}</h3>
+      <p style="color:var(--text2);margin-bottom:24px">${pass?'You passed the onboarding assessment.':'You need 60% to pass. Try again after reviewing.'}</p>
+      <div class="score-ring">
+        <svg viewBox="0 0 100 100" width="100" height="100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="${pass?'var(--accent3)':'var(--accent2)'}" stroke-width="8"
+            stroke-dasharray="${circ}" stroke-dashoffset="${circ-(circ*pct/100)}" stroke-linecap="round"/>
+        </svg>
+        <div class="score-ring-text" style="color:${pass?'var(--accent3)':'var(--accent2)'}">${pct}%</div>
+      </div>
+      <p style="font-size:14px;color:var(--text2);margin-bottom:24px">${correct} correct out of ${total} questions</p>
+      <button class="btn btn-secondary" onclick="quizState.finished=false;quizState.started=false;renderQuiz()">View History</button>
+      <button class="btn btn-primary" style="margin-left:10px" onclick="startQuiz()">Retake Test</button>
+    </div>`;
+}
+
+function startQuiz() {
+  quizState = { current: 0, answers: Array(QUIZ_BANK.length).fill(null), questions: [...QUIZ_BANK].sort(()=>Math.random()-.5).slice(0,8), started: true, finished: false };
+  renderQuiz();
+}
+function selectAnswer(i) { quizState.answers[quizState.current] = i; renderQuiz(); }
+function quizNav(dir) {
+  const next = quizState.current + dir;
+  if (next < 0) return;
+  if (next >= quizState.questions.length) { submitQuiz(); return; }
+  quizState.current = next;
+  renderQuiz();
+}
+function submitQuiz() {
+  const correct = quizState.answers.filter((a,i) => a === quizState.questions[i].ans).length;
+  const pct = Math.round((correct/quizState.questions.length)*100);
+  const results = ls('quiz_results');
+  results.push({ userEmail: state.user.email, userName: state.user.name, score: pct, date: new Date().toLocaleDateString('en-IN'), correct, total: quizState.questions.length });
+  ls_set('quiz_results', results);
+  quizState.started = false;
+  quizState.finished = true;
+  renderQuiz();
+}
+
+// ── INVOICES ──
+function renderInvoices() {
+  const el = document.getElementById('page-invoices');
+  const invoices = ls('invoices');
+  const isAdmin = state.user.role === 'admin';
+  const list = isAdmin ? invoices : invoices.filter(i => i.userEmail === state.user.email);
+
+  el.innerHTML = `
+    <div class="page-header flex-between">
+      <div><h2>Invoices</h2><p>${list.length} invoice(s)</p></div>
+      ${!isAdmin ? `<button class="btn btn-primary" onclick="showCreateInvoice()">+ Create Invoice</button>` : ''}
+    </div>
+    <div class="card">
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>Invoice #</th>${isAdmin?'<th>From</th>':''}
+          <th>Title</th><th>Amount</th><th>Date</th><th>Status</th><th>Action</th>
+        </tr></thead>
+        <tbody>
+          ${list.length===0?`<tr><td colspan="${isAdmin?7:6}" style="text-align:center;padding:32px;color:var(--text2)">No invoices yet</td></tr>`:''}
+          ${list.map((inv,idx)=>`<tr>
+            <td><code style="color:var(--accent);font-size:12px">#INV-${String(idx+1).padStart(4,'0')}</code></td>
+            ${isAdmin?`<td>${inv.userName}</td>`:''}
+            <td>${inv.title}</td>
+            <td style="font-weight:700;color:var(--accent3)">₹${inv.total}</td>
+            <td>${inv.date}</td>
+            <td><span class="badge ${inv.status==='Paid'?'badge-green':inv.status==='Rejected'?'badge-red':'badge-gold'}">${inv.status}</span></td>
+            <td class="flex-gap" style="gap:6px">
+              <button class="btn btn-sm btn-secondary" onclick="previewInvoice(${inv.id})">View</button>
+              ${isAdmin?`<button class="btn btn-sm btn-success" onclick="updateInvStatus(${inv.id},'Paid')">Mark Paid</button>
+                <button class="btn btn-sm btn-danger" onclick="updateInvStatus(${inv.id},'Rejected')">Reject</button>`:''}
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+
+// ── REPORTS ──
+function renderReports() {
+  const el = document.getElementById('page-reports');
+  const results = ls('quiz_results');
+  const isAdmin = state.user.role === 'admin';
+  const list = isAdmin ? results : results.filter(r => r.userEmail === state.user.email);
+  const projects = ls('projects');
+  const invoices = ls('invoices');
+
+  el.innerHTML = `
+    <div class="page-header"><h2>Reports</h2></div>
+    ${isAdmin ? `
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:32px;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent)">${projects.filter(p=>p.status==='open').length}</div>
+        <div style="color:var(--text2);font-size:13px">Open Projects</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:32px;font-family:'Syne',sans-serif;font-weight:800;color:var(--accent3)">${invoices.filter(i=>i.status==='Paid').length}</div>
+        <div style="color:var(--text2);font-size:13px">Paid Invoices</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:32px;font-family:'Syne',sans-serif;font-weight:800;color:var(--gold)">${results.length}</div>
+        <div style="color:var(--text2);font-size:13px">Tests Taken</div>
+      </div>
+    </div>` : ''}
+    <div class="card">
+      <div class="card-title">${isAdmin ? 'All Test Results' : 'My Test Results'}</div>
+      ${list.length===0 ? `<div class="empty-state"><div class="empty-icon">📊</div><div>No test results yet</div><button class="btn btn-primary" style="margin-top:12px" onclick="navigate('quiz')">Take Test</button></div>` : `
+      <div class="table-wrap"><table>
+        <thead><tr>${isAdmin?'<th>Name</th>':''}<th>Date</th><th>Score</th><th>Correct</th><th>Result</th></tr></thead>
+        <tbody>${list.map(r=>`<tr>
+          ${isAdmin?`<td>${r.userName}</td>`:''}
+          <td>${r.date}</td>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;height:6px;background:var(--border);border-radius:3px;min-width:80px">
+                <div style="width:${r.score}%;height:100%;background:${r.score>=60?'var(--accent3)':'var(--accent2)'};border-radius:3px"></div>
+              </div>
+              <span style="font-weight:700">${r.score}%</span>
+            </div>
+          </td>
+          <td>${r.correct}/${r.total}</td>
+          <td><span class="badge ${r.score>=60?'badge-green':'badge-red'}">${r.score>=60?'Pass':'Fail'}</span></td>
+        </tr>`).join('')}</tbody>
+      </table></div>`}
+    </div>`;
+}
+
+// ── USERS (Admin) ──
+function renderUsers() {
+  const el = document.getElementById('page-users');
+  const users = ls('users');
+  el.innerHTML = `
+    <div class="page-header"><h2>All Registered Users</h2><p>${users.length} user(s)</p></div>
+    <div class="card">
+      <div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Organization</th><th>Action</th></tr></thead>
+        <tbody>
+          ${users.length===0?`<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text2)">No users yet</td></tr>`:''}
+          ${users.map(u=>`<tr>
+            <td><div class="flex-gap"><div class="avatar" style="width:28px;height:28px;font-size:11px">${u.name.slice(0,2).toUpperCase()}</div>${u.name}</div></td>
+            <td>${u.email}</td>
+            <td><span class="badge badge-purple">${u.role}</span></td>
+            <td>${u.org||'—'}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteUser('${u.email}')">Remove</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>`;
+}
+
+// ── SETTINGS ──
+function renderSettings() {
+  const el = document.getElementById('page-settings');
+  el.innerHTML = `
+    <div class="page-header"><h2>Settings</h2></div>
+    <div class="card" style="max-width:480px">
+      <div class="card-title">Profile</div>
+      <div class="form-group"><label>Name</label><input id="set_name" value="${state.user.name}"></div>
+      <div class="form-group"><label>Email</label><input id="set_email" value="${state.user.email}"></div>
+      <div class="form-group"><label>Organization</label><input id="set_org" value="${state.user.org||''}"></div>
+      <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+    </div>
+    <div class="card" style="max-width:480px">
+      <div class="card-title">Data Management</div>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Your data is stored locally in your browser. You can clear it here.</p>
+      <button class="btn btn-danger" onclick="if(confirm('Clear all data?')){localStorage.clear();location.reload()}">Clear All Data</button>
+    </div>`;
+}
+
+// ══════════════════════════════════════
+//  ACTIONS
+// ══════════════════════════════════════
+function applyProject(id) {
+  const projects = ls('projects');
+  const p = projects.find(x => x.id === id);
+  if (!p) return;
+  if (!p.applicants) p.applicants = [];
+  if (p.applicants.find(a => a.email === state.user.email)) { showToast('⚠️ Already applied!'); return; }
+  openModal(`
+    <div class="modal-title">Apply for: ${p.title}</div>
+    <div class="form-group"><label>Cover Note</label><textarea id="app_note" rows="4" placeholder="Why are you a good fit for this project?"></textarea></div>
+    <div class="form-group"><label>Expected Rate / Bid</label><input id="app_rate" placeholder="e.g. ₹50,000"></div>
+    <button class="btn btn-primary btn-full" onclick="submitApplication(${id})">Submit Application</button>`);
+}
+
+function submitApplication(id) {
+  const projects = ls('projects');
+  const p = projects.find(x => x.id === id);
+  p.applicants.push({ name: state.user.name, email: state.user.email, org: state.user.org, role: state.user.role, note: document.getElementById('app_note').value, rate: document.getElementById('app_rate').value, date: new Date().toLocaleDateString('en-IN'), status: 'Pending' });
+  ls_set('projects', projects);
+  closeModal(); showToast('✅ Application submitted!'); navigate('apply');
+}
+
+function showApplicants(id) {
+  const p = ls('projects').find(x => x.id === id);
+  const list = p.applicants || [];
+  openModal(`
+    <div class="modal-title">Applicants — ${p.title}</div>
+    ${list.length===0?'<p style="color:var(--text2)">No applicants yet.</p>':''}
+    ${list.map((a,i)=>`
+      <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:10px">
+        <div class="flex-between">
+          <div><strong>${a.name}</strong> <span class="badge badge-purple" style="margin-left:6px">${a.role}</span></div>
+          <span style="font-size:12px;color:var(--text2)">${a.date}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text2);margin:6px 0">${a.email}${a.org?' · '+a.org:''}</div>
+        ${a.note?`<div style="font-size:13px;margin:6px 0">${a.note}</div>`:''}
+        ${a.rate?`<div style="font-size:13px;color:var(--accent3)">Bid: ${a.rate}</div>`:''}
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn btn-sm btn-success" onclick="updateAppStatus(${id},${i},'Accepted')">Accept</button>
+          <button class="btn btn-sm btn-danger" onclick="updateAppStatus(${id},${i},'Rejected')">Reject</button>
+        </div>
+      </div>`).join('')}`);
+}
+
+function updateAppStatus(pid, idx, status) {
+  const projects = ls('projects');
+  projects.find(p=>p.id===pid).applicants[idx].status = status;
+  ls_set('projects', projects);
+  closeModal(); showToast(`✅ Applicant ${status.toLowerCase()}`);
+}
+
+function showAddProject() {
+  openModal(`
+    <div class="modal-title">Add New Project</div>
+    <div class="form-group"><label>Title</label><input id="np_title" placeholder="Project title"></div>
+    <div class="form-group"><label>Description</label><textarea id="np_desc" rows="3" placeholder="Project description"></textarea></div>
+    <div class="grid-2" style="gap:12px">
+      <div class="form-group"><label>Budget</label><input id="np_budget" placeholder="e.g. ₹80,000"></div>
+      <div class="form-group"><label>Duration</label><input id="np_dur" placeholder="e.g. 4 weeks"></div>
+    </div>
+    <div class="form-group"><label>Skills (comma separated)</label><input id="np_skills" placeholder="React, Node.js, SQL"></div>
+    <div class="form-group"><label>Category</label>
+      <select id="np_cat"><option>Development</option><option>Design</option><option>Marketing</option><option>Analytics</option><option>Content</option><option>Other</option></select>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveProject()">Create Project</button>`);
+}
+
+function saveProject() {
+  const projects = ls('projects');
+  projects.push({
+    id: Date.now(), title: document.getElementById('np_title').value,
+    desc: document.getElementById('np_desc').value, budget: document.getElementById('np_budget').value,
+    duration: document.getElementById('np_dur').value, category: document.getElementById('np_cat').value,
+    skills: document.getElementById('np_skills').value.split(',').map(s=>s.trim()),
+    status: 'open', applicants: []
+  });
+  ls_set('projects', projects); closeModal(); showToast('✅ Project created!'); navigate('projects');
+}
+
+function deleteProject(id) {
+  if (!confirm('Delete this project?')) return;
+  ls_set('projects', ls('projects').filter(p=>p.id!==id));
+  showToast('🗑️ Project deleted'); navigate('projects');
+}
+
+function showAddMember() {
+  openModal(`
+    <div class="modal-title">Add Team Member</div>
+    <div class="form-group"><label>Name</label><input id="m_name" placeholder="Full name"></div>
+    <div class="form-group"><label>Email</label><input id="m_email" placeholder="email@example.com"></div>
+    <div class="form-group"><label>Role</label><input id="m_role" placeholder="e.g. Developer, Designer"></div>
+    <div class="form-group"><label>Primary Skill</label><input id="m_skill" placeholder="e.g. React, Figma"></div>
+    <div class="form-group"><label>Status</label>
+      <select id="m_status"><option>Active</option><option>Inactive</option></select>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveMember()">Add Member</button>`);
+}
+
+function saveMember() {
+  const teams = ls('teams');
+  if (!teams[state.user.email]) teams[state.user.email] = [];
+  teams[state.user.email].push({ name: document.getElementById('m_name').value, email: document.getElementById('m_email').value, role: document.getElementById('m_role').value, skill: document.getElementById('m_skill').value, status: document.getElementById('m_status').value });
+  ls_set('teams', teams); closeModal(); showToast('✅ Member added!'); navigate('team');
+}
+
+function removeMember(email, idx) {
+  const teams = ls('teams');
+  teams[email].splice(idx, 1);
+  ls_set('teams', teams); navigate('team');
+}
+
+function showCreateInvoice() {
+  openModal(`
+    <div class="modal-title">Create Invoice</div>
+    <div class="form-group"><label>Invoice Title / Description</label><input id="inv_title" placeholder="e.g. UI Design - Phase 1"></div>
+    <div class="form-group"><label>Project / Client</label><input id="inv_project" placeholder="Project name"></div>
+    <div id="inv_items">
+      <div class="card-title" style="font-size:14px;margin-bottom:8px">Line Items</div>
+      <div id="inv_lines">
+        <div class="grid-2" style="gap:8px;margin-bottom:8px">
+          <input class="inv_desc" placeholder="Description" style="padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif">
+          <input class="inv_amt" type="number" placeholder="Amount (₹)" style="padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif">
+        </div>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="addInvLine()" style="margin-bottom:12px">+ Add Line</button>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="inv_notes" rows="2" placeholder="Payment terms, bank details, etc."></textarea></div>
+    <button class="btn btn-primary btn-full" onclick="saveInvoice()">Generate Invoice</button>`);
+}
+
+function addInvLine() {
+  const div = document.createElement('div');
+  div.className = 'grid-2'; div.style.cssText = 'gap:8px;margin-bottom:8px';
+  div.innerHTML = `<input class="inv_desc" placeholder="Description" style="padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif"><input class="inv_amt" type="number" placeholder="Amount (₹)" style="padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif">`;
+  document.getElementById('inv_lines').appendChild(div);
+}
+
+function saveInvoice() {
+  const descs = [...document.querySelectorAll('.inv_desc')].map(i=>i.value);
+  const amts = [...document.querySelectorAll('.inv_amt')].map(i=>parseFloat(i.value)||0);
+  const items = descs.map((d,i)=>({desc:d,amt:amts[i]})).filter(x=>x.desc);
+  const total = items.reduce((s,x)=>s+x.amt, 0);
+  const invoices = ls('invoices');
+  invoices.push({ id: Date.now(), userEmail: state.user.email, userName: state.user.name, title: document.getElementById('inv_title').value, project: document.getElementById('inv_project').value, items, total, notes: document.getElementById('inv_notes').value, date: new Date().toLocaleDateString('en-IN'), status: 'Pending' });
+  ls_set('invoices', invoices); closeModal(); showToast('🧾 Invoice created!'); navigate('invoices');
+}
+
+function previewInvoice(id) {
+  const inv = ls('invoices').find(i=>i.id===id);
+  if (!inv) return;
+  openModal(`
+    <div class="invoice-preview">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px">
+        <div><h3>Samaadhaan</h3><div style="font-size:12px;color:#888;margin-top:4px">Vendor Portal</div></div>
+        <div style="text-align:right"><div style="font-size:20px;font-weight:700">INVOICE</div><div style="font-size:12px;color:#888">${inv.date}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+        <div><div style="font-size:11px;text-transform:uppercase;color:#888;margin-bottom:4px">From</div><div style="font-weight:600">${inv.userName}</div></div>
+        <div><div style="font-size:11px;text-transform:uppercase;color:#888;margin-bottom:4px">Project</div><div style="font-weight:600">${inv.project}</div></div>
+      </div>
+      <table class="inv-table">
+        <thead><tr><th>Description</th><th style="text-align:right">Amount</th></tr></thead>
+        <tbody>${inv.items.map(item=>`<tr><td>${item.desc}</td><td style="text-align:right">₹${item.amt.toLocaleString('en-IN')}</td></tr>`).join('')}</tbody>
+      </table>
+      <div class="inv-total">Total: ₹${inv.total.toLocaleString('en-IN')}</div>
+      ${inv.notes?`<div style="margin-top:16px;padding:12px;background:#f5f5ff;border-radius:8px;font-size:12px;color:#555">${inv.notes}</div>`:''}
+      <div style="margin-top:20px;text-align:center"><button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button></div>
+    </div>`);
+}
+
+function updateInvStatus(id, status) {
+  const invoices = ls('invoices');
+  const inv = invoices.find(i=>i.id===id);
+  if (inv) inv.status = status;
+  ls_set('invoices', invoices); showToast(`✅ Invoice marked as ${status}`); navigate('invoices');
+}
+
+function deleteUser(email) {
+  if (!confirm('Remove this user?')) return;
+  ls_set('users', ls('users').filter(u=>u.email!==email));
+  navigate('users');
+}
+
+function saveSettings() {
+  state.user.name = document.getElementById('set_name').value;
+  state.user.email = document.getElementById('set_email').value;
+  state.user.org = document.getElementById('set_org').value;
+  buildSidebar(); showToast('✅ Settings saved!');
+}
+
+// ══════════════════════════════════════
+//  MODAL & TOAST
+// ══════════════════════════════════════
+function openModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
